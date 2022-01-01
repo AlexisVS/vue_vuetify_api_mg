@@ -25,23 +25,28 @@
         </v-col>
       </v-row>
       <template v-slot:extension class="mx-0 px-0">
-        <v-container class="mx-0">
-          <v-row v-if="overallStats != null" class="d-flex justify-space-around my-2">
-            <div class="body-2 teal--text text--accent-3">
-              <span class="font-weight-bold white--text">Monnaies: </span>
+          <v-row v-if="overallStats != null" class="d-none d-md-flex my-2 mx-4 text-caption">
+            <div class="body-2 teal--text text--accent-3 mr-3 text-caption">
+              <span class="font-weight-bold white--text">Monnaies:</span>
               {{ overallStats.active_cryptocurrencies }}
             </div>
-            <div class="body-2 teal--text text--accent-3">
-              <span class="font-weight-bold white--text">Plateforme d'échange: </span>
+            <div class="body-2 teal--text text--accent-3 mr-3 text-caption">
+              <span class="font-weight-bold white--text">Plateforme d'échange:</span>
               {{ overallStats.markets }}
             </div>
-            <div class="body-2 teal--text text--accent-3">
-              <span class="font-weight-bold white--text">Capitalisation boursière: </span>
+            <div class="body-2 teal--text text--accent-3 mr-3 text-caption">
+              <span class="font-weight-bold white--text">Capitalisation boursière:</span>
               {{ allMarketsUsd }}
               <span class="cyan--text text--darken-1">$US</span>
             </div>
+            <div class="body-2 teal--text text--accent-3 mr-3 text-caption d-flex" >
+              <span class="font-weight-bold white--text mr-1">Prédominance:</span>
+              <div class="mr-2" v-for="item in predominance" :key="'predominance-' + item.name">
+                {{ item.name }}: 
+                <span class="cyan--text text--darken-1 ml-n1"> {{ " " + item.value}}%</span>
+              </div>
+            </div>
           </v-row>
-        </v-container>
       </template>
     </v-app-bar>
     <v-main>
@@ -66,12 +71,15 @@ export default {
   }),
   mounted () {
     axios.get('https://api.coingecko.com/api/v3/global')
-    .then(res => this.overallStats = res.data.data)
+      .then(res => this.overallStats = res.data.data)
   },
   computed: {
     allMarketsUsd () {
-      return Object.values(this.overallStats.total_market_cap).reduce( (a, b) => a + b).toLocaleString()
-    }
+      return Object.values(this.overallStats.total_market_cap).reduce((a, b) => a + b).toLocaleString()
+    },
+    predominance () {
+      return Object.entries(this.overallStats.market_cap_percentage).sort( (a,b) => a[1] < b[1]).map(e => ({name:e[0], value:e[1].toPrecision(4)})).slice(0,3)
+    },
   }
 };
 </script>
